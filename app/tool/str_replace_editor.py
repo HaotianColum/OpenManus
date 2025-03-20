@@ -1,6 +1,7 @@
 """File and directory manipulation tool with sandbox support."""
 
 from collections import defaultdict
+from pathlib import Path
 from typing import Any, DefaultDict, List, Literal, Optional, get_args
 
 from app.config import config
@@ -99,7 +100,6 @@ class StrReplaceEditor(BaseTool):
     }
     _file_history: DefaultDict[PathLike, List[str]] = defaultdict(list)
     _local_operator: LocalFileOperator = LocalFileOperator()
-    # todo: Sandbox resources need to be destroyed at the appropriate time.
     _sandbox_operator: SandboxFileOperator = SandboxFileOperator()
 
     # def _get_operator(self, use_sandbox: bool) -> FileOperator:
@@ -128,7 +128,7 @@ class StrReplaceEditor(BaseTool):
         operator = self._get_operator()
 
         # Validate path and command combination
-        await self.validate_path(command, path, operator)
+        await self.validate_path(command, Path(path), operator)
 
         # Execute the appropriate command
         if command == "view":
@@ -164,16 +164,12 @@ class StrReplaceEditor(BaseTool):
         return str(result)
 
     async def validate_path(
-        self, command: str, path: str, operator: FileOperator
+        self, command: str, path: Path, operator: FileOperator
     ) -> None:
         """Validate path and command combination based on execution environment."""
         # Check if path is absolute
-        if not path.startswith("/"):
-            suggested_path = f"/{path}"
-            raise ToolError(
-                f"The path {path} is not an absolute path, it should start with `/`. "
-                f"Maybe you meant {suggested_path}?"
-            )
+        if not path.is_absolute():
+            raise ToolError(f"The path {path} is not an absolute path")
 
         # Only check if path exists for non-create commands
         if command != "create":

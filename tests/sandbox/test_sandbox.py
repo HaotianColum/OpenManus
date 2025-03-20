@@ -1,14 +1,14 @@
 import pytest
 import pytest_asyncio
 
-from app.sandbox.core.sandbox import DockerSandbox, SandboxConfig
+from app.sandbox.core.sandbox import DockerSandbox, SandboxSettings
 
 
 @pytest.fixture(scope="module")
 def sandbox_config():
     """Creates sandbox configuration for testing."""
-    return SandboxConfig(
-        image="python:3.10-slim",
+    return SandboxSettings(
+        image="python:3.12-slim",
         work_dir="/workspace",
         memory_limit="1g",
         cpu_limit=0.5,
@@ -141,7 +141,7 @@ async def test_sandbox_cleanup(sandbox_config):
 async def test_sandbox_error_handling():
     """Tests error handling with invalid configuration."""
     # Test invalid configuration
-    invalid_config = SandboxConfig(image="nonexistent:latest", work_dir="/invalid")
+    invalid_config = SandboxSettings(image="nonexistent:latest", work_dir="/invalid")
 
     sandbox = DockerSandbox(invalid_config)
     with pytest.raises(Exception):

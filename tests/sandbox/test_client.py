@@ -5,14 +5,14 @@ from typing import AsyncGenerator
 import pytest
 import pytest_asyncio
 
-from app.config import SandboxConfig
+from app.config import SandboxSettings
 from app.sandbox.client import LocalSandboxClient, create_sandbox_client
 
 
 @pytest_asyncio.fixture(scope="function")
 async def local_client() -> AsyncGenerator[LocalSandboxClient, None]:
     """Creates a local sandbox client for testing."""
-    client = await create_sandbox_client()
+    client = create_sandbox_client()
     try:
         yield client
     finally:
@@ -29,8 +29,8 @@ def temp_dir() -> Path:
 @pytest.mark.asyncio
 async def test_sandbox_creation(local_client: LocalSandboxClient):
     """Tests sandbox creation with specific configuration."""
-    config = SandboxConfig(
-        image="python:3.10-slim",
+    config = SandboxSettings(
+        image="python:3.12-slim",
         work_dir="/workspace",
         memory_limit="512m",
         cpu_limit=0.5,

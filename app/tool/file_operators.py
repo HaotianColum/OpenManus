@@ -4,7 +4,7 @@ import asyncio
 from pathlib import Path
 from typing import Optional, Protocol, Tuple, Union, runtime_checkable
 
-from app.config import SandboxConfig
+from app.config import SandboxSettings
 from app.exceptions import ToolError
 from app.sandbox.client import SANDBOX_CLIENT
 
@@ -42,17 +42,19 @@ class FileOperator(Protocol):
 class LocalFileOperator(FileOperator):
     """File operations implementation for local filesystem."""
 
+    encoding: str = "utf-8"
+
     async def read_file(self, path: PathLike) -> str:
         """Read content from a local file."""
         try:
-            return Path(path).read_text()
+            return Path(path).read_text(encoding=self.encoding)
         except Exception as e:
             raise ToolError(f"Failed to read {path}: {str(e)}") from None
 
     async def write_file(self, path: PathLike, content: str) -> None:
         """Write content to a local file."""
         try:
-            Path(path).write_text(content)
+            Path(path).write_text(content, encoding=self.encoding)
         except Exception as e:
             raise ToolError(f"Failed to write to {path}: {str(e)}") from None
 
@@ -100,7 +102,7 @@ class SandboxFileOperator(FileOperator):
     async def _ensure_sandbox_initialized(self):
         """Ensure sandbox is initialized."""
         if not self.sandbox_client.sandbox:
-            await self.sandbox_client.create(config=SandboxConfig())
+            await self.sandbox_client.create(config=SandboxSettings())
 
     async def read_file(self, path: PathLike) -> str:
         """Read content from a file in sandbox."""
